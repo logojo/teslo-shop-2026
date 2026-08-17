@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -5,6 +6,32 @@ import { Label } from "@/components/ui/label";
 
 const FilterSidebar = () => {
 
+  const [ searchParams, setSearchParams ] = useSearchParams()
+
+  const currentSizes = searchParams.get('sizes')?.split(',') || [];
+  const currentPrice = searchParams.get('price') || 'any';
+
+  const handleSize = ( size : string ) => {
+    const newSizes = currentSizes.includes(size)
+    ? currentSizes.filter( s => s !== size )
+    : [...currentSizes, size ];
+
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set("pages", '1');
+      params.set("sizes", newSizes.join(','));
+      return params;
+    });
+  }
+
+  const setCurrentPrice = ( value : string ) => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set("pages", '1');
+      params.set("price", value);
+      return params;
+    });
+  }
 
   const sizes = [
     { id: "xs", label: "XS" },
@@ -28,9 +55,10 @@ const FilterSidebar = () => {
           {sizes.map((size) => (
             <Button
               key={size.id}
-              variant="outline"
+              variant={currentSizes.includes(size.id) ? "default" : "outline"}
               size="sm"
               className="h-8"
+              onClick={() => handleSize( size.id )}
             >
               {size.label}
             </Button>
@@ -43,9 +71,9 @@ const FilterSidebar = () => {
       {/* Price Range */}
       <div className="space-y-4">
         <h4 className="font-medium">Precio</h4>
-        <RadioGroup defaultValue="" className="space-y-3">
+        <RadioGroup  value={currentPrice} onValueChange={setCurrentPrice} className="space-y-3" >
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="any" id="priceAny" />
+            <RadioGroupItem  value="any" id="priceAny"/>
             <Label htmlFor="priceAny" className="text-sm cursor-pointer">Cualquier precio</Label>
           </div>
           <div className="flex items-center space-x-2">

@@ -3,8 +3,8 @@ import { createBrowserRouter, Navigate } from "react-router";
 import { ShopLayout } from "./shop/layout/ShopLayout";
 
 import HomePage from "./shop/pages/HomePage";
-import ProductPage from "./shop/pages/ProductPage";
 import GenderPage from "./shop/pages/GenderPage";
+import { ProductPage } from "./shop/pages/ProductPage";
 
 const  AuthLayout = lazy(() => import("./auth/layout/AuthLayout"))
 const  LoginPage = lazy(() => import("./auth/pages/LoginPage"))
@@ -62,9 +62,13 @@ export const appRouter = createBrowserRouter([
                 element: <DashboardPage />
             },
             {
-                path: 'products/:id',
+                path: 'products',
                 element: <ProductsPage />    
             }, 
+            {
+                path: '*',
+                element: <Navigate to='/admin' />
+            }
         ]
     },
     {
