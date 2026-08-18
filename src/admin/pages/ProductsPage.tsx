@@ -1,105 +1,120 @@
-import { tableFeatures, useTable } from '@tanstack/react-table'
 import type { ColumnDef } from '@tanstack/react-table'
 
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
 import { AdminTitle } from "../components/AdminTitle"
+import { CustomTable, type PaginationFeatures } from '@/components/custom/CustomTable'
+import { products, type Product } from '../../data/products';
+import { Badge } from '@/components/ui/badge';
+import { buttonVariants } from '@/components/ui/button';
+import { Link } from 'react-router';
+import { CirclePlus, Edit3 } from 'lucide-react';
 
-interface Person {
-  firstName: string,
-  lastName: string,
-  age: number
-}
 
-const data: Array<Person> = [
-  { firstName: 'tanner', lastName: 'linsley', age: 24 },
-  { firstName: 'tandy', lastName: 'miller', age: 40 },
-  { firstName: 'joe', lastName: 'dirte', age: 45 },
-]
-
-// 3. New in v9: declare which features this table uses (none yet)
-const features = tableFeatures({})
 
 // 4. Define your columns
-const columns: Array<ColumnDef<typeof features, Person>> = [
+const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
   {
-    accessorKey: 'firstName', // accessorKey shorthand
-    header: 'First Name',
-    cell: (info) => info.getValue(),
+    accessorKey: 'id', // accessorKey shorthand
+    header: () => (
+      <div className="font-bold text-gray-500">
+        #
+      </div>
+    ),
   },
   {
-    accessorFn: (row) => row.lastName, // accessorFn alternative with a custom id
-    id: 'lastName',
-    header: () => <span>Last Name</span>,
-    cell: (info) => <i>{info.getValue<string>()}</i>,
+    accessorKey: 'image', // accessorKey shorthand
+    header: 'Image',
+    cell: (info) => <img className='w-10' src={info.getValue<string>()}/>,
   },
   {
-    accessorKey: 'age',
-    header: () => 'Age',
+    accessorKey: 'name', // accessorKey shorthand
+    header: 'Name',
+  },
+  {
+    accessorKey: 'price', // accessorKey shorthand
+    header: 'Price',
+  },
+  {
+    accessorKey: 'category', // accessorKey shorthand
+    header: 'Category',
+  },
+  {
+    accessorKey: 'sizes', 
+    header: 'Sizes',
+    cell: ({ getValue }) => {
+      const colors = getValue<string[]>()
+
+      return (
+        <div className="flex flex-wrap gap-1">
+          {colors.map((color) => (
+            <Badge key={color} variant="secondary">
+              {color},
+            </Badge>
+          ))}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'colors', 
+    header: 'Colors',
+    cell: ({ getValue }) => {
+      const colors = getValue<string[]>()
+
+      return (
+        <div className="flex flex-wrap gap-1">
+          {colors.map((color) => (
+            <Badge key={color} variant="secondary">
+              {color},
+            </Badge>
+          ))}
+        </div>
+      )
+    },
+  },
+  {
+    accessorFn: (row) => row.id,
+    id: 'actions',
+    header: 'actions',
+    cell: (info) => (
+      <div>
+        <Link
+          to={`/admin/products/${info.getValue<string>()}`}
+          className={buttonVariants({ variant: "outline", size: "icon" })}
+        >
+          <Edit3 />
+        </Link>       
+      </div>
+    ),
   },
 ]
 
 const ProductsPage = () => {
-  const table = useTable({
-    key: 'products-table', // needed for devtools, omit if you don't want to use the devtools
-    features,
-    columns,
-    data,
-  })
 
   return (
     <>
-      <AdminTitle 
-        title="Products"
-        subtitle="Here you can view and manage your products."
+
+      <div className='flex justify-between items-center px-10'>
+        <AdminTitle 
+          title="Products"
+          subtitle="Here you can view and manage your products."
+        />
+       
+        <Link
+          to='/admin/products/new'
+          className={buttonVariants({ variant: "default"})}
+        >
+          <CirclePlus data-icon="inline-start" />
+          New Product
+        </Link>       
+      </div>
+
+
+      <CustomTable
+        tableKey='products-table'
+        data={[...products]}
+        columns={columns}
       />
 
-
-      <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
-        <TableHeader>
-          {
-             
-             table.getHeaderGroups().map((headerGroup) => (
-
-               <TableRow key={headerGroup.id}>
-                {
-                    headerGroup.headers.map((header) => (
-                 <TableHead key={header.id} className="w-25">
-                  {
-                    header.isPlaceholder ? null : (
-                    <table.FlexRender header={header} />
-                  )}
-                 </TableHead>
-                ))}
-               </TableRow>
-           
-
-
-          )) }
-          </TableHeader>
-        <TableBody>
-          {
-           table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {
-              row.getAllCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  <table.FlexRender cell={cell} />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
     </>
   )
 }

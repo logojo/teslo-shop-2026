@@ -66,6 +66,10 @@ export const appRouter = createBrowserRouter([
                 element: <ProductsPage />    
             }, 
             {
+                path: 'products/:id',
+                element: <ProductPage />    
+            }, 
+            {
                 path: '*',
                 element: <Navigate to='/admin' />
             }
