@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button"
-import type { Product } from "@/data/products"
 import { Filter, Grid, List } from "lucide-react"
 import ProductCard from "./ProductCard"
 import FilterSidebar from "./FilterSidebar"
 import { useState } from "react"
 import { useSearchParams } from "react-router"
+
+import type { Product } from "@/admin/interfaces/products.interface"
 
 interface Props {
     products : Product[]
@@ -96,14 +97,15 @@ export const ProductsGrid = ({ products } : Props) => {
                     ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" 
                     : "space-y-4"
                 }>
-                {products.map((product) => (
+                {
+                products.map((product) => (
                     <ProductCard
                         key={product.id}
                         id={product.id}
-                        name={product.name}
+                        name={product.title}
                         price={product.price}
-                        image={product.image}
-                        category={product.category}
+                        image={product.images[0]}
+                        tags={product.tags}
                     />
                 ))}
                 </div>

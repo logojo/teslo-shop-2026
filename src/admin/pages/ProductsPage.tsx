@@ -1,14 +1,17 @@
+import { Link, useSearchParams } from 'react-router';
+
+import { CirclePlus, Edit3 } from 'lucide-react';
+
 import type { ColumnDef } from '@tanstack/react-table'
 
 import { AdminTitle } from "../components/AdminTitle"
 import { CustomTable, type PaginationFeatures } from '@/components/custom/CustomTable'
-import { products, type Product } from '../../data/products';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
-import { Link } from 'react-router';
-import { CirclePlus, Edit3 } from 'lucide-react';
+import type { Product } from '../interfaces/products.interface';
+import ErrorPage from '../components/errors/ErrorPage';
 
-
+import { useProducts } from '@/shared/hooks/useProducts';
 
 // 4. Define your columns
 const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
@@ -16,17 +19,18 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
     accessorKey: 'id', // accessorKey shorthand
     header: () => (
       <div className="font-bold text-gray-500">
-        #
+       ID
       </div>
     ),
   },
   {
-    accessorKey: 'image', // accessorKey shorthand
+    accessorFn: (row) => row.images[0] , // accessorFn alternative with a custom id
+    id: 'image',
     header: 'Image',
     cell: (info) => <img className='w-10' src={info.getValue<string>()}/>,
   },
   {
-    accessorKey: 'name', // accessorKey shorthand
+    accessorKey: 'title', // accessorKey shorthand
     header: 'Name',
   },
   {
@@ -34,20 +38,20 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
     header: 'Price',
   },
   {
-    accessorKey: 'category', // accessorKey shorthand
-    header: 'Category',
+    accessorKey: 'stock', // accessorKey shorthand
+    header: 'stock',
   },
   {
     accessorKey: 'sizes', 
     header: 'Sizes',
     cell: ({ getValue }) => {
-      const colors = getValue<string[]>()
+      const sizes = getValue<string[]>()
 
       return (
         <div className="flex flex-wrap gap-1">
-          {colors.map((color) => (
-            <Badge key={color} variant="secondary">
-              {color},
+          {sizes.map((size) => (
+            <Badge key={size} variant="secondary">
+              {size},
             </Badge>
           ))}
         </div>
@@ -55,8 +59,8 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
     },
   },
   {
-    accessorKey: 'colors', 
-    header: 'Colors',
+    accessorKey: 'tags', 
+    header: 'Tags',
     cell: ({ getValue }) => {
       const colors = getValue<string[]>()
 
@@ -89,6 +93,12 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
 ]
 
 const ProductsPage = () => {
+  const [ searchParams, setSearchParams ] = useSearchParams();
+
+  const page = searchParams.get("page") ?? '1';
+  const limit = searchParams.get("limit") ?? '10';
+
+  const { data: shopResponse, error, isPending, isFetching, refetch  } = useProducts(+page, +limit);
 
   return (
     <>
@@ -108,12 +118,33 @@ const ProductsPage = () => {
         </Link>       
       </div>
 
+      {  error
+         ? <ErrorPage 
+              error={error.variant} //enviando la variante del error
+              onRetry={refetch}
+            />
 
-      <CustomTable
-        tableKey='products-table'
-        data={[...products]}
-        columns={columns}
-      />
+         :  <CustomTable
+                tableKey='products-table'
+                data={[...shopResponse?.products ?? []]}
+                columns={columns}
+                pageCount={shopResponse?.pages ?? 1 }
+                pageIndex={ +page }
+                pageSize={ +limit }
+                onPaginationChange={(pageIndex, pageSize) => {
+                  setSearchParams((prev) => {
+                    const params = new URLSearchParams(prev)
+
+                    params.set("page", String(pageIndex + 1))
+                    params.set("limit", String(pageSize))
+
+                    return params
+                  })
+                }}
+                isLoading={ isPending || isFetching }
+                
+              />
+      }
 
     </>
   )

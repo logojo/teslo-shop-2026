@@ -1,6 +1,6 @@
 import { 
-  //para paginacion
-  createPaginatedRowModel,
+  // para paginacion
+  //createPaginatedRowModel,
   rowPaginationFeature,
 
   //ordenamiento
@@ -19,6 +19,7 @@ import {
   tableFeatures, 
   useTable } from '@tanstack/react-table';
 import type { ColumnDef, RowData } from '@tanstack/react-table';
+import { useTanStackTableDevtools } from '@tanstack/react-table-devtools'
 
 import {
   Table,
@@ -40,12 +41,13 @@ import {
 import { Input } from "@/components/ui/input"
 
 import { TablePagination } from './TablePagination';
+import { TableSkeleton } from '@/admin/components/skeletons/TableScheleton';
 
 
 const features = tableFeatures({
   //paginacion
   rowPaginationFeature,
-  paginatedRowModel: createPaginatedRowModel(),
+  //paginatedRowModel: createPaginatedRowModel(), //*esto solo se aplica cuando la paginación es del lado del cliente
 
   //ordenamiento
   rowSortingFeature,
@@ -75,9 +77,22 @@ type TableProps<TData extends RowData> = {
     tableKey: string
     data: TData[],
     columns: Array<ColumnDef<PaginationFeatures, TData>>
+    pageCount: number
+    pageIndex: number
+    pageSize: number
+    onPaginationChange: (pageIndex: number, pageSize: number) => void
+    isLoading?: boolean
 };
 
-export const CustomTable = <TData extends RowData>( { tableKey, data, columns } : TableProps<TData> ) => {
+export const CustomTable = <TData extends RowData>( { 
+  tableKey, 
+  data, 
+  columns,  
+  pageCount,
+  pageIndex,
+  pageSize,
+  onPaginationChange,
+  isLoading = false, } : TableProps<TData> ) => {
 
   const table =  useTable({
     key: tableKey,
@@ -85,16 +100,38 @@ export const CustomTable = <TData extends RowData>( { tableKey, data, columns } 
     columns,
     data,
 
+    manualPagination: true,
+    pageCount,
+
     //definiendo estado inicial del paginador
-   initialState: {
-    pagination: {
-      pageIndex: 0,
-      pageSize: 10,
+   state: {
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
     },
 
-    
-  },
+    onPaginationChange: (updater) => {
+        const currentPagination = {
+            pageIndex,
+            pageSize,
+        }
+
+        const nextPagination =
+            typeof updater === 'function'
+            ? updater(currentPagination)
+            : updater
+
+        onPaginationChange(
+            nextPagination.pageIndex,
+            nextPagination.pageSize
+        )
+    },
+
   });
+
+  
+  useTanStackTableDevtools(table)
 
   return (
     <div className='py-5 px-10'>
@@ -184,15 +221,21 @@ export const CustomTable = <TData extends RowData>( { tableKey, data, columns } 
                     
             </TableHeader>
             <TableBody>
-                {table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
-                    {row.getAllCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                        <table.FlexRender cell={cell} />
-                        </TableCell>
-                    ))}
-                    </TableRow>
-                ))}
+                {isLoading ? (
+                        <TableSkeleton
+                        columns={columns.length}
+                        rows={pageSize}
+                        />
+                    ) : (
+                        table.getRowModel().rows.map((row) => (
+                            <TableRow key={row.id}>
+                            {row.getAllCells().map((cell) => (
+                                <TableCell key={cell.id}>
+                                <table.FlexRender cell={cell} />
+                                </TableCell>
+                            ))}
+                            </TableRow>
+                        )))}
             </TableBody>
         </Table>
 

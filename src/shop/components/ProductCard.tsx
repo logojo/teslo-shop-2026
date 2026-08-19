@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -6,10 +7,10 @@ interface ProductCardProps {
   name: string;
   price: number;
   image: string;
-  category: string;
+  tags: string[];
 }
 
-const ProductCard = ({ id, name, price, image, category }: ProductCardProps) => {
+const ProductCard = ({ id, name, price, image, tags }: ProductCardProps) => {
   return (
     <Card className="group border-0 shadow-none product-card-hover cursor-pointer">
       <CardContent className="p-0">
@@ -25,7 +26,13 @@ const ProductCard = ({ id, name, price, image, category }: ProductCardProps) => 
         <div className="pt-6 px-4 pb-4 space-y-3">
           <div className="space-y-1">
             <h3 className="font-medium text-sm tracking-tight">{name}</h3>
-            <p className="text-xs text-muted-foreground uppercase">{category}</p>
+            <div className="flex flex-wrap gap-1">
+              {tags.map((tag) => (
+                <Badge key={tag} variant="secondary">
+                  {tag},
+                </Badge>
+              ))}
+            </div>
           </div>
           
           <div className="flex items-center justify-between">

@@ -1,5 +1,3 @@
-import { useSearchParams } from 'react-router';
-
 import type { RowData, Table } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import {
@@ -20,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 
 import type { PaginationFeatures } from './CustomTable';
-import { useEffect } from 'react';
 
 type PaginationProps<TData extends RowData> = {
   table: Table<PaginationFeatures, TData>;
@@ -65,24 +62,13 @@ function getPaginationItems(
 }
 
 export function TablePagination<TData extends RowData>({ table }: PaginationProps<TData>) {
-  const [ searchParams, setSearchParams ] = useSearchParams();
   const { pageIndex, pageSize } = table.store.state.pagination;
   const pageCount = table.getPageCount()
 
   const paginationItems = getPaginationItems(
     pageIndex,
     pageCount,
-  )
-
-
-  useEffect(() => {
-     setSearchParams((prev) => {
-      const params = new URLSearchParams(prev);
-      params.set("page", (pageIndex + 1) + '');
-      return params;
-    });
-  }, [pageIndex])
-  
+  )  
 
   return (
       <div className="mt-6 flex flex-col gap-4 border-t pt-4">
