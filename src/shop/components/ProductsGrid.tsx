@@ -5,7 +5,7 @@ import FilterSidebar from "./FilterSidebar"
 import { useState } from "react"
 import { useSearchParams } from "react-router"
 
-import type { Product } from "@/admin/interfaces/products.interface"
+import type { Product } from "@/shared/interfaces/products.interface"
 
 interface Props {
     products : Product[]
@@ -101,11 +101,11 @@ export const ProductsGrid = ({ products } : Props) => {
                 products.map((product) => (
                     <ProductCard
                         key={product.id}
-                        id={product.id}
                         name={product.title}
                         price={product.price}
                         image={product.images[0]}
                         tags={product.tags}
+                        sizes={product.sizes}
                     />
                 ))}
                 </div>

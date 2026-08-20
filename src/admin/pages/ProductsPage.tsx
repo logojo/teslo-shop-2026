@@ -8,10 +8,10 @@ import { AdminTitle } from "../components/AdminTitle"
 import { CustomTable, type PaginationFeatures } from '@/components/custom/CustomTable'
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
-import type { Product } from '../interfaces/products.interface';
 import ErrorPage from '../components/errors/ErrorPage';
 
 import { useProducts } from '@/shared/hooks/useProducts';
+import type { Product } from '@/shared/interfaces/products.interface';
 
 // 4. Define your columns
 const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
@@ -95,10 +95,10 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
 const ProductsPage = () => {
   const [ searchParams, setSearchParams ] = useSearchParams();
 
-  const page = searchParams.get("page") ?? '1';
-  const limit = searchParams.get("limit") ?? '10';
+  const page = Number(searchParams.get("page") ?? '1');
+  const limit = Number(searchParams.get("limit") ?? '10');
 
-  const { data: shopResponse, error, isPending, isFetching, refetch  } = useProducts(+page, +limit);
+  const { data: shopResponse, error, isPending, isFetching, refetch  } = useProducts(page, limit);
 
   return (
     <>
@@ -129,9 +129,10 @@ const ProductsPage = () => {
                 data={[...shopResponse?.products ?? []]}
                 columns={columns}
                 pageCount={shopResponse?.pages ?? 1 }
-                pageIndex={ +page }
-                pageSize={ +limit }
+                pageIndex={ page -1 }
+                pageSize={ limit }
                 onPaginationChange={(pageIndex, pageSize) => {
+                
                   setSearchParams((prev) => {
                     const params = new URLSearchParams(prev)
 

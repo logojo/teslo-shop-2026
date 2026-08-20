@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface ProductCardProps {
-  id: string;
   name: string;
   price: number;
   image: string;
   tags: string[];
+  sizes: string[];
 }
 
-const ProductCard = ({ id, name, price, image, tags }: ProductCardProps) => {
+const ProductCard = ({ name, price, image, tags, sizes }: ProductCardProps) => {
   return (
     <Card className="group border-0 shadow-none product-card-hover cursor-pointer">
       <CardContent className="p-0">
@@ -18,7 +18,7 @@ const ProductCard = ({ id, name, price, image, tags }: ProductCardProps) => {
           <img
             src={image}
             alt={name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-fill transition-transform duration-300 group-hover:scale-105"
           />
           <div className="image-overlay" />
         </div>
@@ -30,6 +30,13 @@ const ProductCard = ({ id, name, price, image, tags }: ProductCardProps) => {
               {tags.map((tag) => (
                 <Badge key={tag} variant="secondary">
                   {tag},
+                </Badge>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {sizes.map((size) => (
+                <Badge key={size} variant='secondary' className="border px-2 rounded-full">
+                  {size}
                 </Badge>
               ))}
             </div>

@@ -1,20 +1,27 @@
+import type { Gender, ProductsResponse } from "@/shared/interfaces/products.interface";
 import { shopApi } from "@/shared/api/shop.api";
-import type { ProductsResponse } from "../interfaces/products.interface";
+
 
 
 export const getProducts = async(
     page: number,
     limit: number,
+    gender?: Gender,
  ) : Promise<ProductsResponse> => {
 
-     if ( isNaN(page) ) {
+    if ( isNaN(page) ) {
          page = 1;
+    }
+
+    if ( isNaN(limit) ) {
+         page = 10;
     }
 
     const { data } = await shopApi.get<ProductsResponse>('/products', {
         params : {
           limit,
           offset: ( page -1 ) * limit,
+          gender
         }
     });
 
@@ -22,9 +29,6 @@ export const getProducts = async(
         ...product,
         images: product.images.map( (image) => `${ import.meta.env.VITE_API_URL}/api/files/product/${image}` )
     }));
-
-    console.log(products);
-    
 
     return {
         ...data,
