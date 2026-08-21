@@ -1,27 +1,31 @@
 import type { Gender, ProductsResponse } from "@/shared/interfaces/products.interface";
 import { shopApi } from "@/shared/api/shop.api";
 
-
+interface Options {
+    page: number;
+    limit: number;
+    gender?: Gender;
+    sizes?: string;
+    minPrice: number|undefined;
+    maxPrice: number|undefined;
+    q: string|undefined;
+}
 
 export const getProducts = async(
-    page: number,
-    limit: number,
-    gender?: Gender,
+   options : Options
  ) : Promise<ProductsResponse> => {
 
-    if ( isNaN(page) ) {
-         page = 1;
-    }
-
-    if ( isNaN(limit) ) {
-         page = 10;
-    }
+    const { page,  limit, gender, sizes, minPrice, maxPrice, q } = options;
 
     const { data } = await shopApi.get<ProductsResponse>('/products', {
         params : {
           limit,
           offset: ( page -1 ) * limit,
-          gender
+          gender,
+          sizes,
+          minPrice,
+          maxPrice,
+          q
         }
     });
 

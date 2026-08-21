@@ -41,7 +41,7 @@ import {
 import { Input } from "@/components/ui/input"
 
 import { TablePagination } from './TablePagination';
-import { TableSkeleton } from '@/admin/components/skeletons/TableScheleton';
+import { Spinner } from '../ui/spinner';
 
 
 const features = tableFeatures({
@@ -72,17 +72,26 @@ const features = tableFeatures({
 
 export type PaginationFeatures = typeof features;
 
-
 type TableProps<TData extends RowData> = {
-    tableKey: string
-    data: TData[],
-    columns: Array<ColumnDef<PaginationFeatures, TData>>
-    pageCount: number
-    pageIndex: number
+  tableKey: string
+  data: TData[]
+  columns: Array<ColumnDef<PaginationFeatures, TData>>
+  pageCount: number
+
+  pageIndex: number
+  pageSize: number
+
+  globalFilter: string | undefined
+
+  onPaginationChange: (
+    pageIndex: number,
     pageSize: number
-    onPaginationChange: (pageIndex: number, pageSize: number) => void
-    isLoading?: boolean
-};
+  ) => void
+
+  onGlobalFilterChange: (value: string) => void
+
+  isLoading?: boolean
+}
 
 export const CustomTable = <TData extends RowData>( { 
   tableKey, 
@@ -91,7 +100,9 @@ export const CustomTable = <TData extends RowData>( {
   pageCount,
   pageIndex,
   pageSize,
+  globalFilter,
   onPaginationChange,
+  onGlobalFilterChange,
   isLoading = false, } : TableProps<TData> ) => {
 
   const table =  useTable({
@@ -109,6 +120,7 @@ export const CustomTable = <TData extends RowData>( {
         pageIndex,
         pageSize,
       },
+      globalFilter,
     },
 
     onPaginationChange: (updater) => {
@@ -126,7 +138,11 @@ export const CustomTable = <TData extends RowData>( {
             nextPagination.pageIndex,
             nextPagination.pageSize
         )
+
+        
     },
+
+    onGlobalFilterChange
 
   });
 
@@ -134,17 +150,32 @@ export const CustomTable = <TData extends RowData>( {
   useTanStackTableDevtools(table)
 
   return (
-    <div className='py-5 px-10'>
+    <div className='py-5 px-10 relative'>
+
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/30 backdrop-blur-[1px] z-10">
+            <Spinner className="size-30" />
+          </div>
+        )}
 
         {/* input Search */}
         <div className='flex items-center m-5 gap-10'>            
 
-            <Input 
+            {/* <Input 
                 type="search"
                 value={table.state.globalFilter ?? ''}
                 onChange={(event) => {
                     table.setGlobalFilter(event.target.value)
                     table.setPageIndex(0)
+                }}
+                placeholder="Buscar..."
+            /> */}
+
+            <DebouncedInput
+                type="search"
+                value={table.state.globalFilter ?? ""}
+                onChange={(event) => {
+                    onGlobalFilterChange(event.target.value)
                 }}
                 placeholder="Buscar..."
             />
@@ -185,7 +216,7 @@ export const CustomTable = <TData extends RowData>( {
                      
                         {headerGroup.headers.map((header) => {
                             if (header.isPlaceholder) {
-                            return <th key={header.id} />
+                            return <TableRow key={header.id} />
                             }
 
                             const isSorted = header.column.getIsSorted()
@@ -221,22 +252,18 @@ export const CustomTable = <TData extends RowData>( {
                     
             </TableHeader>
             <TableBody>
-                {isLoading ? (
-                        <TableSkeleton
-                        columns={columns.length}
-                        rows={pageSize}
-                        />
-                    ) : (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
-                            {row.getAllCells().map((cell) => (
-                                <TableCell key={cell.id}>
-                                <table.FlexRender cell={cell} />
-                                </TableCell>
-                            ))}
-                            </TableRow>
-                        )))}
-            </TableBody>
+                {
+                    table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id}>
+                        {row.getAllCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                            <table.FlexRender cell={cell} />
+                            </TableCell>
+                        ))}
+                        </TableRow>
+                    ))
+                }
+            </TableBody> 
         </Table>
 
         <TablePagination table={table} />

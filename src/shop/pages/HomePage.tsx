@@ -4,19 +4,14 @@ import CustomPagination from "@/components/custom/CustomPagination"
 import { CustomJumbotron } from "../components/CustomJumbotron"
 import { ProductsGrid } from "../components/ProductsGrid"
 import { useProducts } from "@/shared/hooks/useProducts"
-import { useSearchParams } from "react-router"
 import ErrorPage from "@/admin/components/errors/ErrorPage"
 import ProductGridSkeleton from "../components/skeletons/ProductCardSckeleton"
 
 
 
 const HomePage = () => {
-  const [ searchParams ] = useSearchParams();
-
-  const page = searchParams.get("page") ?? '1';
-  const limit = searchParams.get("limit") ?? '10';
-
-  const { data: shopResponse, error, isPending, isFetching, refetch  } = useProducts(+page, +limit);
+  const { query } = useProducts() 
+  const { data: shopResponse, error, isPending, isFetching, refetch  } = query;
 
   if( isPending )
        return <ProductGridSkeleton />

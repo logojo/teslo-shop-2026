@@ -31,7 +31,8 @@ const CustomPagination = ({ totalPages }: Props) => {
         <Button variant="outline" 
                 size="sm" 
                 disabled={page === 1} 
-                onClick={() => handlePagechange(page - 1)} >
+                onClick={() => handlePagechange(page - 1)} 
+                type="button">
         <ChevronLeft className="h-4 w-4" />
         Previous
         </Button>
@@ -43,6 +44,7 @@ const CustomPagination = ({ totalPages }: Props) => {
                     variant={page === (index + 1)  ? "default" : "outline"} 
                     size="sm"
                     onClick={() => handlePagechange(index + 1)}
+                    type="button"
                 >
                     {index + 1}
                 </Button>
@@ -57,7 +59,8 @@ const CustomPagination = ({ totalPages }: Props) => {
         <Button variant="outline" 
                 size="sm" 
                 disabled={page === totalPages}
-                onClick={() => handlePagechange(page + 1)} >
+                onClick={() => handlePagechange(page + 1)} 
+                type="button">
             Next
             <ChevronRight className="h-4 w-4" />
         </Button>

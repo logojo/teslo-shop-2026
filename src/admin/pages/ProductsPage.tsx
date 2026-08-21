@@ -12,6 +12,7 @@ import ErrorPage from '../components/errors/ErrorPage';
 
 import { useProducts } from '@/shared/hooks/useProducts';
 import type { Product } from '@/shared/interfaces/products.interface';
+import { TableSkeleton } from '../components/skeletons/TableScheleton';
 
 // 4. Define your columns
 const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
@@ -93,12 +94,9 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
 ]
 
 const ProductsPage = () => {
-  const [ searchParams, setSearchParams ] = useSearchParams();
-
-  const page = Number(searchParams.get("page") ?? '1');
-  const limit = Number(searchParams.get("limit") ?? '10');
-
-  const { data: shopResponse, error, isPending, isFetching, refetch  } = useProducts(page, limit);
+  const [ , setSearchParams ] = useSearchParams();
+  const { query, page, limit, q } = useProducts() 
+  const { data: shopResponse, error, isPending, isFetching, refetch  } = query;
 
   return (
     <>
@@ -118,34 +116,49 @@ const ProductsPage = () => {
         </Link>       
       </div>
 
-      {  error
-         ? <ErrorPage 
+      {
+        error 
+        ? <ErrorPage 
               error={error.variant} //enviando la variante del error
               onRetry={refetch}
             />
-
-         :  <CustomTable
-                tableKey='products-table'
-                data={[...shopResponse?.products ?? []]}
-                columns={columns}
-                pageCount={shopResponse?.pages ?? 1 }
-                pageIndex={ page -1 }
-                pageSize={ limit }
-                onPaginationChange={(pageIndex, pageSize) => {
-                
-                  setSearchParams((prev) => {
-                    const params = new URLSearchParams(prev)
-
-                    params.set("page", String(pageIndex + 1))
-                    params.set("limit", String(pageSize))
-
-                    return params
-                  })
-                }}
-                isLoading={ isPending || isFetching }
-                
+        : isPending 
+        ? <TableSkeleton
+                  columns={columns.length}
+                  rows={10}
               />
+        : <CustomTable
+            tableKey='products-table'
+            data={[...shopResponse.products ?? []]}
+            columns={columns}
+            pageCount={shopResponse.pages ?? 1 }
+            pageIndex={ page -1 }
+            pageSize={ limit }
+            globalFilter={ q }
+            onPaginationChange={(pageIndex, pageSize) => {
+              setSearchParams((prev) => {
+                const params = new URLSearchParams(prev)
+
+                params.set("page", String(pageIndex + 1))
+                params.set("limit", String(pageSize))
+
+                return params
+              })
+            }}
+            onGlobalFilterChange={(value) => {
+              setSearchParams((prev) => {
+                const params = new URLSearchParams(prev)
+
+                params.set("q", value)
+                params.set("page", "1")
+
+                return params
+              })
+            }}
+            isLoading={ isPending || isFetching }
+          />
       }
+      
 
     </>
   )

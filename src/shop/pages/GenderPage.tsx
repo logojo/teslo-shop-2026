@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from "react-router"
+import { useParams } from "react-router"
 import CustomPagination from "@/components/custom/CustomPagination"
 import { CustomJumbotron } from "../components/CustomJumbotron"
 import { ProductsGrid } from "../components/ProductsGrid"
@@ -9,7 +9,6 @@ import { Spinner } from "@/components/ui/spinner"
 
 
 const GenderPage = () => {
-  const [ searchParams ] = useSearchParams();
   const { gender } = useParams()
 
   const genderLabel =  gender === 'men'
@@ -17,10 +16,8 @@ const GenderPage = () => {
   : gender === 'women' 
      ? 'Mujeres' : 'Niños';
 
-  const page = searchParams.get("page") ?? '1';
-  const limit = searchParams.get("limit") ?? '10';
-
-  const { data: shopResponse, error, isPending, isFetching, refetch  } = useProducts(+page, +limit, gender);
+  const { query } = useProducts( gender ) 
+  const { data: shopResponse, error, isPending, isFetching, refetch  } = query;
 
   if( isPending )
        return <ProductGridSkeleton />

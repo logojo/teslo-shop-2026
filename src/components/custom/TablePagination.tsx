@@ -147,7 +147,7 @@ export function TablePagination<TData extends RowData>({ table }: PaginationProp
                     key={item}
                     onClick={() => table.setPageIndex(item)}
                 >
-                  <PaginationLink href="#" isActive={active}>
+                  <PaginationLink isActive={active}>
                     {item + 1}
                   </PaginationLink>
                 </PaginationItem>
