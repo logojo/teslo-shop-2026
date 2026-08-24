@@ -27,8 +27,7 @@ const LoginPage = () => {
 
     try {
       await login(email, password);
-
-      navigate('/admin');
+      navigate('/');
     } catch (error) {
       if (error instanceof ApiError) {
         toast.error(error.message, {

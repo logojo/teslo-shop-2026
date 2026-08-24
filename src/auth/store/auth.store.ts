@@ -2,12 +2,18 @@ import { create } from 'zustand'
 import type { User } from '../interfaces/auth.interface'
 import { login } from '../actions/login.action'
 
+
+type AuthStatus = 'authenticathed' | 'not-authenticated' | 'checking'
+
 type AuthState = {
   user: User | null,
   token: string | null,
   loading: boolean,
+  authStatus: AuthStatus
+
   login: (email: string, password : string)  => Promise<boolean>,
   logout: () => void;
+  
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -15,6 +21,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
   token: null,
   loading: false,
   error: null,
+  authStatus: 'checking',
+
   login:  async ( email: string, password : string ) =>   {
     try {
         set({ loading: true })
