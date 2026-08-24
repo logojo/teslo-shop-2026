@@ -13,6 +13,6 @@ export const login = async( email: string, password: string) : Promise<AuthRespo
     
    } catch (error) {
     console.log(error);
-     throw error;
+    throw error;
    }
 }
