@@ -11,8 +11,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import type { ErrorVariant } from "@/shared/api/api-error"
 
-import type { ErrorVariant } from "@/heroes/api/api-error"
 
 type ErrorPreset = {
   icon: LucideIcon

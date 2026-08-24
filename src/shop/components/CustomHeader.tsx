@@ -3,13 +3,16 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { cn } from "@/lib/utils";
 
 import { Search, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomLogo } from "@/components/custom/CustomLogo";
+import { useAuthStore } from "@/auth/store/auth.store";
 
 const CustomHeader = () => {
 
   const [ searchParams, setSearchParams ] = useSearchParams()
+  const { user, logout } = useAuthStore();
+
   const { gender } = useParams()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -89,15 +92,20 @@ const CustomHeader = () => {
               <Search className="h-5 w-5" />
             </Button>
             
-           <Link to='/auth/login'>
-            <Button
-              variant='default'
-              size='sm'
-              className='ml-2'
-            >
-              Login
-            </Button>
-           </Link>
+            {
+              !user 
+              ? (
+              <Link to='/auth/login'
+                  className={buttonVariants({ variant: 'default', size:'sm'})}
+              >
+                Login
+              </Link>
+              ) : (
+                <Button variant="outline"  onClick={logout}>
+                 Logout
+                </Button>
+              )
+            }
 
            <Link to='/admin'>
             <Button

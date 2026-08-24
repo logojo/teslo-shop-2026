@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { ErrorState, } from "./ErrorStates";
-import type { ErrorVariant } from "@/heroes/api/api-error";
+
 import { useNavigate } from "react-router";
+import type { ErrorVariant } from "@/shared/api/api-error";
 
 
 const VARIANTS: { value: ErrorVariant; label: string; code?: string }[] = [

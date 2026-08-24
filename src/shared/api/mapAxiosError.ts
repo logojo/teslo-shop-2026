@@ -1,30 +1,72 @@
 import type { AxiosError } from "axios";
-import { ApiError } from "./api-error";
+import { ApiError, type ApiErrorResponse } from "./api-error";
 
-export function mapAxiosError(error: AxiosError): ApiError {
+export function mapAxiosError(error: AxiosError<ApiErrorResponse>): ApiError {
   // No hubo respuesta del servidor
   if (!error.response) {
     return new ApiError("network");
   }
 
-  switch (error.response.status) {
+   const { status, data } = error.response;
+
+  switch (status) {
     case 401:
-      return new ApiError("unauthorized", 401);
+      return new ApiError(
+        "unauthorized",
+        status,
+        typeof data.message === "string"
+          ? data.message
+          : data.message.join(", "),
+        data
+      );
 
     case 403:
-      return new ApiError("forbidden", 403);
+      return new ApiError(
+        "forbidden",
+        status,
+        typeof data.message === "string"
+          ? data.message
+          : data.message.join(", "),
+        data
+      );
 
     case 404:
-      return new ApiError("not-found", 404);
+      return new ApiError(
+        "not-found",
+        status,
+        typeof data.message === "string"
+          ? data.message
+          : data.message.join(", "),
+        data
+      );
 
     case 408:
-      return new ApiError("timeout", 408);
+      return new ApiError(
+        "timeout",
+        status,
+        typeof data.message === "string"
+          ? data.message
+          : data.message.join(", "),
+        data
+      );
 
     default:
-      if (error.response.status >= 500) {
-        return new ApiError("server", error.response.status);
+      if (status >= 500) {
+        return new ApiError(
+          "server",
+          status,
+          "Error interno del servidor",
+          data
+        );
       }
 
-      return new ApiError("generic", error.response.status);
+      return new ApiError(
+        "generic",
+        status,
+        typeof data.message === "string"
+          ? data.message
+          : data.message.join(", "),
+        data
+      );
   }
 }

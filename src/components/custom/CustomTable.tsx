@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { useDebouncedCallback } from '@tanstack/react-pacer/debouncer';
 import { 
   // para paginacion
   //createPaginatedRowModel,
@@ -40,42 +38,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 
 import { TablePagination } from './TablePagination';
 import { Spinner } from '../ui/spinner';
-
-
-// A typical debounced input react component
-function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string
-  onChange: (value: string) => void
-  debounce?: number
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  const debouncedOnChange = useDebouncedCallback(onChange, { wait: debounce })
-
-  return (
-    <Input
-      {...props}
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value)
-        debouncedOnChange(e.target.value)
-      }}
-    />
-  )
-}
+import { DebouncedInput } from '@/shared/Components/DebouncedInput';
 
 
 const features = tableFeatures({
@@ -194,16 +160,6 @@ export const CustomTable = <TData extends RowData>( {
 
         {/* input Search */}
         <div className='flex items-center m-5 gap-10'>            
-
-            {/* <Input 
-                type="search"
-                value={table.state.globalFilter ?? ''}
-                onChange={(event) => {
-                    table.setGlobalFilter(event.target.value)
-                    table.setPageIndex(0)
-                }}
-                placeholder="Buscar..."
-            /> */}
 
             <DebouncedInput
                 type="search"
