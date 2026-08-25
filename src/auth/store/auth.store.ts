@@ -75,10 +75,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     }
   },
 
-  register:  async ( name: string, email: string, password : string ) =>   {
+  register:  async ( fullName: string, email: string, password : string ) =>   {
     try {
         set({ loading: true })
-        const data = await  register(name, email, password);
+        const data = await  register(fullName, email, password);
         localStorage.setItem('token', data.token);
         set({ user: data.user, token: data.token, loading: false, authStatus: 'authenticathed' })
         return true;

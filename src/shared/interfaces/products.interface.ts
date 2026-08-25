@@ -21,7 +21,16 @@ export interface Product {
 }
 
 
-export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XL' | 'XXL'
+export const SIZES = [
+  'XS',
+  'S',
+  'M',
+  'L',
+  'XL',
+  'XXL',
+] as const;
+
+export type Size = typeof SIZES[number];
 
 export const Gender = {
     Kid: "kid",

@@ -22,7 +22,7 @@ const CheckAuthProvider = ({ children } : PropsWithChildren) => {
     queryFn: checkAuthStatus,
     retry: false,
     refetchInterval: 1000 * 60 * 1.5, //revalidar sesion cada hora media
-    refetchOnWindowFocus: true, //revalidar sesion  despues de una suspencion de pantalla
+    //refetchOnWindowFocus: true, //revalidar sesion  despues de una suspencion de pantalla
   });
 
   if( isLoading )

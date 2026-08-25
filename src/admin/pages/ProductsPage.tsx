@@ -12,7 +12,8 @@ import ErrorPage from '../components/errors/ErrorPage';
 
 import { useProducts } from '@/shared/hooks/useProducts';
 import type { Product } from '@/shared/interfaces/products.interface';
-import { TableSkeleton } from '../components/skeletons/TableScheleton';
+import { TableSkeleton } from '../components/skeletons/TableSckeleton';
+import { currencyFormatter } from '@/lib/formatter';
 
 // 4. Define your columns
 const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
@@ -37,6 +38,7 @@ const columns: Array<ColumnDef<PaginationFeatures, Product>> = [
   {
     accessorKey: 'price', // accessorKey shorthand
     header: 'Price',
+     cell: (info) => <span>{ currencyFormatter( info.getValue<number>() )}</span>,
   },
   {
     accessorKey: 'stock', // accessorKey shorthand

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, MessageSquare, Settings } from 'lucide-react';
+import { Bell, MessageSquare, Settings } from 'lucide-react';
 
 const AdminHeader: React.FC = () => {
   return (
@@ -7,14 +7,14 @@ const AdminHeader: React.FC = () => {
       <div className="flex items-center justify-between">
         {/* Search */}
         <div className="flex-1 max-w-md">
-          <div className="relative">
+          {/* <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
               placeholder="Search..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Actions */}

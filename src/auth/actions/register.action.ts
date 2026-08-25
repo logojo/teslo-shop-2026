@@ -2,10 +2,10 @@ import { shopApi } from "@/shared/api/shop.api"
 
 import type { AuthResponse } from "../interfaces/auth.interface"
 
-export const register = async( name: string, email: string, password: string) : Promise<AuthResponse> => {
+export const register = async( fullName: string, email: string, password: string) : Promise<AuthResponse> => {
    try {
     const { data } = await shopApi.post<AuthResponse>('/auth/register', {
-        name,
+        fullName,
         email, 
         password
     });

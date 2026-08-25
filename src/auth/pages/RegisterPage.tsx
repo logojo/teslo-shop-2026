@@ -21,12 +21,12 @@ const RegisterPage = () => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
-    const name = formData.get('name') as string;
+    const fullName = formData.get('fullName') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
     try {
-      await register(name, email, password);
+      await register(fullName, email, password);
       navigate('/');
     } catch (error) {
       if (error instanceof ApiError) {
@@ -56,7 +56,7 @@ const RegisterPage = () => {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Name</Label>
-                <Input name="name" type="text" placeholder="name" required />
+                <Input name="fullName" type="text" placeholder="name" required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
