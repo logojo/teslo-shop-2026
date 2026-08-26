@@ -4,7 +4,7 @@ import { ApiError, type ApiErrorResponse } from "./api-error";
 export function mapAxiosError(error: AxiosError<ApiErrorResponse>): ApiError {
   // No hubo respuesta del servidor
   if (!error.response) {
-    return new ApiError("network");
+    return new ApiError("network", 503, "We couldn't reach the server. Check your internet connection and try again.");
   }
 
    const { status, data } = error.response;

@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useForm } from "react-hook-form"
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Plus, SaveAll, Tag, Upload, X } from "lucide-react";
 
 import { SIZES, type Product, type Size } from "@/shared/interfaces/products.interface"
@@ -10,13 +11,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+
+
 interface Props {
     product : Product;
     productTitle: string;
     productSubtitle: string;
+    isPending: boolean
+
+    onSubmit: ( productLike: Partial<Product> & { files?: File[] }) => Promise<void>
 }
 
-export const ProductForm = ({ product, productTitle, productSubtitle } : Props ) => {
+interface FormInputs extends Product {
+    files?: File[]
+}
+
+export const ProductForm = ({ product, productTitle, productSubtitle, isPending, onSubmit } : Props ) => {
   const newTag  = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -27,32 +37,46 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
     getValues,
     setValue,
     watch,
-  } = useForm({
+  } = useForm<FormInputs>({
     defaultValues: product
   });
+
+
+  useEffect(() => {
+    setValue('files', [])
+    setValue('images', product.images)
+  }, [product])
+  
 
   //al usar watch permite monitorias si una variable cambia
   const selectedSizes = watch('sizes');
   const tags = watch('tags');
+  const currectStock = watch('stock');
+  const currectFiles = watch('files');
+  const currentImages = watch('images');
 
 
-  const addTag = ( tag: string ) => {
+  const addTag = () => {
+    const tag = newTag.current!.value.trim();
+    if( tag === '' ) return 
+
     const tagsSet = new Set( getValues('tags'));
-    tagsSet.add(tag);
+    tagsSet.add( tag );
   
     setValue('tags', Array.from(tagsSet))
     
-    if (newTag.current) {
-        newTag.current.value = "";
+    if ( newTag.current ) {
+         newTag.current.value = "";
     }
   };
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  
     if (e.key === 'Enter' || e.key === ' ' ||  e.key === ',') {
         e.preventDefault();
-        addTag(newTag.current?.value.trim() ?? '');
+        addTag();
     }
-    };
+ };
 
   const removeTag = (tag: string) => {
     const tagsSet = new Set( getValues('tags'));
@@ -90,20 +114,38 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
     e.stopPropagation();
     setDragActive(false);
     const files = e.dataTransfer.files;
-    console.log(files);
+
+    if( !files ) return;
+
+
+    const currentFiles = getValues('files') || []
+    setValue('files', [...currentFiles, ...Array.from(files)])
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    console.log(files);
+    
+    if( !files ) return;
+
+    const currentFiles = getValues('files') || []
+    setValue('files', [...currentFiles, ...Array.from(files)])
   };
 
-  const onSubmit = ( productLike : Product) => {
-        console.log('onSubmit', productLike);
+  const deleteImage = ( image: string ) => {
+    const imagesSet = new Set( getValues('images'));
+    imagesSet.delete(image);
+    setValue('images', Array.from(imagesSet))
   }
 
+  const deleteFile = ( file: File ) => {
+    const filesSet = new Set( getValues('files'));
+    filesSet.delete(file);
+    setValue('files', Array.from(filesSet))
+  }
+
+
   return (
-    <form onSubmit={ handleSubmit( onSubmit ) }>
+    <form onSubmit={ handleSubmit(  onSubmit ) }>
      <div className='flex justify-between items-center px-10 flex-wrap'>
         <AdminTitle title={productTitle} subtitle={productSubtitle} />
         <div className="flex justify-end gap-4">
@@ -115,7 +157,11 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
               Cancelar
           </Link>               
 
-          <Button type="submit">
+          <Button type="submit" disabled={isPending}>
+            {
+                isPending &&
+                <Spinner data-icon="inline-start" />
+            }
             <SaveAll className="w-4 h-4" />
             Guardar cambios
           </Button>
@@ -340,7 +386,7 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
                         placeholder="Añadir nueva etiqueta..."
                         className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                         />
-                        <Button type="button" onClick={() => addTag(newTag.current?.value.trim() ?? '') } className="px-4 py-2rounded-lg ">
+                        <Button type="button" onClick={ addTag } className="px-4 py-2rounded-lg ">
                         <Plus className="h-4 w-4" />
                         </Button>
                     </div>
@@ -353,20 +399,20 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
             {/* Product Images */}
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
                 <h2 className="text-xl font-semibold text-slate-800 mb-6">
-                Imágenes del producto
+                    Imágenes del producto
                 </h2>
 
                 {/* Drag & Drop Zone */}
                 <div
-                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
-                    dragActive
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'border-slate-300 hover:border-slate-400'
-                }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
+                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
+                        dragActive
+                        ? 'border-blue-400 bg-blue-50'
+                        : 'border-slate-300 hover:border-slate-400'
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
                 >
                 <input
                     type="file"
@@ -393,28 +439,66 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
 
                 {/* Current Images */}
                 <div className="mt-6 space-y-3">
-                <h3 className="text-sm font-medium text-slate-700">
-                    Imágenes actuales
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                    {product?.images.map((image, index) => (
-                    <div key={index} className="relative group">
-                        <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
-                        <img
-                            src={image}
-                            alt="Product"
-                            className="w-full h-full object-cover rounded-lg"
-                        />
+                    <h3 className="text-sm font-medium text-slate-700">
+                        Imágenes actuales
+                    </h3>                   
+                    <div className="grid grid-cols-2 gap-3">
+                        {currentImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                            <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
+                            <img
+                                src={image}
+                                alt="Product"
+                                className="w-full h-full object-cover rounded-lg"
+                            />
+                            </div>
+                            <button type="button" 
+                                    className="cursor-pointer absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                    onClick={() => deleteImage(image) }>
+
+                            <X className="h-3 w-3" />
+                            </button>
+                            <p className="mt-1 text-xs text-slate-600 truncate">
+                            {image}
+                            </p>
                         </div>
-                        <button className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <X className="h-3 w-3" />
-                        </button>
-                        <p className="mt-1 text-xs text-slate-600 truncate">
-                        {image}
-                        </p>
+                        ))}
                     </div>
-                    ))}
                 </div>
+
+                {/* Imagenes  */}
+                <div className={cn('mt-2 space-y-3 transition-all duration-200"', 
+                    {
+                        "max-h-0 opacity-0": currectFiles?.length === 0,
+                        "max-h-125 opacity-100": currectFiles && currectFiles.length > 0,
+                    }
+                )}>
+                    
+                    <h3 className="text-sm font-medium text-slate-700 mb-2">
+                        Imágenes por cargar
+                    </h3> 
+                    <div className="grid grid-cols-2 gap-3">
+                        {currectFiles?.map((file, index) => (
+                        <div key={index} className="relative group">
+                            <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
+                            <img
+                                src={ URL.createObjectURL(file)}
+                                alt="Product"
+                                className="w-full h-full object-cover rounded-lg"
+                            />
+                            </div>
+                            <button type="button" 
+                                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                    onClick={() => deleteFile(file) }
+                                    >
+                                <X className="h-3 w-3" />
+                            </button>
+                            <p className="mt-1 text-xs text-slate-600 truncate">
+                             {file.name}
+                            </p>
+                        </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -440,16 +524,16 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
                     </span>
                     <span
                     className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        product!.stock > 5
+                       currectStock > 5
                         ? 'bg-green-100 text-green-800'
-                        : product!.stock > 0
+                        : currectStock > 0
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}
                     >
-                    {product!.stock > 5
+                    {currectStock > 5
                         ? 'En stock'
-                        : product!.stock > 0
+                        : currectStock > 0
                         ? 'Bajo stock'
                         : 'Sin stock'}
                     </span>
@@ -469,7 +553,7 @@ export const ProductForm = ({ product, productTitle, productSubtitle } : Props )
                     Tallas disponibles
                     </span>
                     <span className="text-sm text-slate-600">
-                    {product.sizes.length} tallas
+                    {selectedSizes.length} tallas
                     </span>
                 </div>
                 </div>
