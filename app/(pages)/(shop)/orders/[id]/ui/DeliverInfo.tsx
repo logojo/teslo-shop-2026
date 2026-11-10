@@ -1,20 +1,21 @@
 import { DeliverAddress } from '@/app/components/sale/DeliverAddress'
-import { Loader } from '@/app/components/ui/Loader';
 import { Address } from '@/app/interfaces';
 import { currencyFormat } from '@/app/utils';
 import PayPalCheckout from './PayPalCheckout';
+import { Order } from '@/generated/prisma/client';
+import { OrderPaid } from './OrderPaid';
 
 
 interface Props {
- orderId: string
+ order: Order
  deliverInfo: Address;
  totalProducts: number;
  subtotal: number;
  iva: number;
  total: number
 }
-export const DeliverInfo = ({ orderId, deliverInfo, totalProducts, subtotal, iva, total } : Props) => {
-  const  loading = false;
+export const DeliverInfo = ({ order, deliverInfo, totalProducts, subtotal, iva, total } : Props) => {
+ 
   return (
     <div>
          
@@ -37,19 +38,12 @@ export const DeliverInfo = ({ orderId, deliverInfo, totalProducts, subtotal, iva
         </div>
     
         <div className="mt-5 mb-2">
-            <PayPalCheckout orderId={orderId}/>
-            {/* <button className={
-                    clsx(
-                        "w-full flex items-center gap-2 btn-primary justify-center ", {
-                        "cursor-pointer active:scale-90": !loading
-                        }
-                    )
-                    }
-                    disabled={loading}                   
-            >
-                    { loading && <Loader />}
-                    Realizar Pago
-            </button> */}
+            {
+                !order.isPaid
+                ? <PayPalCheckout orderId={order.id}/>
+                : <OrderPaid />
+            }
+           
         </div>
                   
         </div>

@@ -57,7 +57,7 @@ export async function createPayment(orderId: string) {
     }
 
     const existing = await getPayPalOrder(order.transactionId);
-
+    
     if (
       existing.id !== order.transactionId ||
       existing.purchase_units?.[0]?.custom_id !== order.id ||
@@ -96,7 +96,7 @@ export async function createPayment(orderId: string) {
       proveedor: null,
     },
     data: {
-      transactionId: paypalOrder.id,
+      transactionId: paypalOrder.id, //id de orden en paypal
       proveedor: "PayPal",
     },
   });
@@ -158,6 +158,7 @@ export async function capturePayment(paypalOrderId: string) {
   // recuperar ciertos casos donde PayPal capturó, pero la app
   // perdió la respuesta anterior.
   let paypalOrder = await getPayPalOrder(paypalOrderId);
+  
 
   if (paypalOrder.id !== paypalOrderId) {
     throw new Error("La orden devuelta por PayPal no coincide");
@@ -169,25 +170,71 @@ export async function capturePayment(paypalOrderId: string) {
     }
 
     try {
+      console.log("Iniciando captura:", paypalOrderId);
+
       paypalOrder = await capturePayPalOrder(
         paypalOrderId,
         order.id
       );
-    } catch {
-      // La petición pudo haber fallado después de completarse
-      // en PayPal. Consulta de nuevo antes de declarar el fallo.
-      paypalOrder = await getPayPalOrder(paypalOrderId);
+
+      console.log(
+        "Respuesta de captura:",
+        JSON.stringify({
+          id: paypalOrder.id,
+          status: paypalOrder.status,
+          purchase_units: paypalOrder.purchase_units,
+        }, null, 2)
+      );
+
+    } catch (error) {
+      console.error("ERROR REAL AL CAPTURAR PAYPAL:", error);
+
+      // Recuperación: comprobar si PayPal completó
+      // la captura a pesar del error de comunicación.
+      paypalOrder = await getPayPalOrder(paypalOrderId);"Iniciando captura:"
+
+      console.log(
+        "Estado recuperado:",
+        JSON.stringify({
+          id: paypalOrder.id,
+          status: paypalOrder.status,
+          purchase_units: paypalOrder.purchase_units,
+        }, null, 2)
+      );
     }
   }
 
+  
   const purchaseUnit = paypalOrder.purchase_units?.[0];
-  const capture = purchaseUnit?.payments?.captures?.[0];
+
+  const capture = purchaseUnit?.payments?.captures?.find(
+    (item) => item.status === "COMPLETED"
+  );
+
+  const customId =
+    purchaseUnit?.custom_id ?? capture?.custom_id;
+
+  const validation = {
+    orderStatus: paypalOrder.status,
+    orderIdMatches: paypalOrder.id === paypalOrderId,
+    customIdMatches: customId === order.id,
+    expectedCurrency: paypalCurrency,
+    expectedAmount,
+    captureStatus: capture?.status,
+    captureCurrency: capture?.amount?.currency_code,
+    captureAmount: capture?.amount?.value,
+    captureId: capture?.id,
+  };
+
+  console.log(
+    "VALIDACIÓN PAYPAL:",
+    JSON.stringify(validation, null, 2)
+  );
 
   if (
     paypalOrder.status !== "COMPLETED" ||
-    purchaseUnit?.custom_id !== order.id ||
-    purchaseUnit.amount?.currency_code !== paypalCurrency ||
-    purchaseUnit.amount?.value !== expectedAmount ||
+    paypalOrder.id !== paypalOrderId ||
+    customId !== order.id ||
     capture?.status !== "COMPLETED" ||
     capture.amount?.currency_code !== paypalCurrency ||
     capture.amount?.value !== expectedAmount ||
@@ -197,6 +244,8 @@ export async function capturePayment(paypalOrderId: string) {
       "No se pudo verificar la captura y el importe del pago"
     );
   }
+
+
 
   const updated = await prisma.order.updateMany({
     where: {
@@ -209,6 +258,7 @@ export async function capturePayment(paypalOrderId: string) {
     data: {
       isPaid: true,
       paidAt: new Date(),
+      captureId: capture.id, // id de pago de paypal
     },
   });
 

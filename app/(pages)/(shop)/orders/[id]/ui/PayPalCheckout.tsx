@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PayPalButton from "./PayPalButton";
+import { OrderPaid } from "./OrderPaid";
 
 type Props = {
   orderId: string;
@@ -23,15 +24,7 @@ export default function PayPalCheckout({ orderId }: Props) {
       </p>
 
       {paid ? (
-        <div
-          role="status"
-          className="rounded-xl bg-emerald-50 p-4 text-emerald-800"
-        >
-          <p className="font-semibold">¡Pago confirmado!</p>
-          <p className="mt-1 text-sm">
-            Tu pedido ha sido actualizado correctamente.
-          </p>
-        </div>
+        <OrderPaid />
       ) : (
           <PayPalButton 
             orderId={orderId}

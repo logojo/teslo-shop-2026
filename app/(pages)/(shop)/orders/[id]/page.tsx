@@ -96,7 +96,7 @@ async function Orden({ params } : Props ) {
           </div>
 
           <DeliverInfo
-            orderId={order.id}
+            order={order}
             deliverInfo={address}
             iva={order.tax}
             subtotal={order.subTotal}

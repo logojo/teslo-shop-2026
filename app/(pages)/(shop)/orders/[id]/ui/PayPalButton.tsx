@@ -49,11 +49,13 @@ const PayPalButton = ({
 
             try {
             return await createPayment(orderId);
-            } catch {
-            setProcessing(false);
-            setError(
-                "No se pudo iniciar el pago. Verifica el estado del pedido e inténtalo nuevamente."
-            );
+            } catch(e) {
+              console.log(e);
+              
+              setProcessing(false);
+              setError(
+                  "No se pudo iniciar el pago. Verifica el estado del pedido e inténtalo nuevamente."
+              );
 
             throw new Error("No se pudo crear el pago");
             }
@@ -65,7 +67,9 @@ const PayPalButton = ({
             try {
             await capturePayment(paypalOrderId);
             setPaid(true);
-            } catch {
+            } catch(e) {
+              console.log(e);
+              
             setError(
                 "No pudimos confirmar el pago. No vuelvas a pagar sin verificar primero el estado de tu pedido."
             );

@@ -177,6 +177,7 @@ model Order {
 
   transactionId String?
   proveedor     String?
+  captureId     String?
 }
 
 model OrderItem {

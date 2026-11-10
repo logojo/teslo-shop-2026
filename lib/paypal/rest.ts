@@ -4,7 +4,7 @@ const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
 
 const baseUrl =
-  process.env.PAYPAL_ENVIRONMENT === "production"
+  process.env.NEXT_PUBLIC_PAYPAL_ENVIRONMENT === "production"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
 
@@ -17,6 +17,7 @@ if (!clientId || !clientSecret) {
 type PayPalCapture = {
   id?: string;
   status?: string;
+  custom_id?: string;
   amount?: {
     currency_code?: string;
     value?: string;
@@ -88,6 +89,15 @@ async function paypalRequest<T>(
   });
 
   if (!response.ok) {
+
+    const errorBody = await response.text();
+
+    console.error("PayPal API Error:", {
+      status: response.status,
+      path,
+      body: errorBody,
+    });
+
     // No devuelvas tokens ni credenciales al cliente.
     throw new Error(`PayPal respondió con HTTP ${response.status}`);
   }
